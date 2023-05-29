@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+
+      - name: Generate tag
+        id: generate_tag
+        run: |
+          tag=$(git describe --abbrev=0 --tags)
+          if [[ -z "$tag" ]]; then
+            tag="v0.0.1"
+          else
+            tag=${tag#v}
+            IFS='.' read -r major minor patch <<< "$tag"
+            ((patch++))
+            tag="v${major}.${minor}.${patch}"
+          fi
+          echo "::set-output name=tag::$tag"
+
+      - name: Extract changes
+        id: extract_changes
+        run: |
+          changes=$(git log --format="%s" ${{ github.event.before }}..${{ github.sha }})
+          echo "::set-output name=changes::$changes"
+
+      - name: Extract pull request messages
+        id: extract_pr_messages
+        run: |
+          pr_messages=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            pr_messages=$(jq --raw-output '.commits[].message' ${{ github.event_path }})
+          fi
+          echo "::set-output name=pr_messages::$pr_messages"
+
+      - name: Create release
+        if: ${{ github.event_name == 'push' }}
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.generate_tag.outputs.tag }}
+          release_name: Release ${{ steps.generate_tag.outputs.tag }}
+          body: |
+            ## Changes
+            ${{ steps.extract_changes.outputs.changes }}
+
+            ## Pull Request Messages
+            ${{ steps.extract_pr_messages.outputs.pr_messages }}
