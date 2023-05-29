@@ -6,6 +6,12 @@
 ![](https://img.shields.io/github/license/numb95/rssfinder?style=for-the-badge)
 ![](https://img.shields.io/github/actions/workflow/status/numb95/rssfinder/go.yml?style=for-the-badge)
 
+Install the rssfinder using the following command:
+
+```bash 
+go get github.com/numb95/rssfinder
+```
+Import it in the project:
 ```go
 import "github.com/numb95/rssfinder"
 ```
