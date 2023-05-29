@@ -2,8 +2,12 @@
 
 # rssfinder
 
+![](https://img.shields.io/github/go-mod/go-version/numb95/rssfinder?style=for-the-badge)
+![](https://img.shields.io/github/license/numb95/rssfinder?style=for-the-badge)
+![](https://img.shields.io/github/actions/workflow/status/numb95/rssfinder/go.yml?style=for-the-badge)
+
 ```go
-import "rssfinder"
+import "github.com/numb95/rssfinder"
 ```
 
 ## Index
