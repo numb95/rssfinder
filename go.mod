@@ -1,4 +1,4 @@
-module rssfinder
+module github.com/numb95/rssfinder
 
 go 1.19
 
