@@ -24,7 +24,7 @@ jobs:
       - name: Generate tag
         id: generate_tag
         run: |
-          tag=$(git describe --abbrev=0 --tags)
+          tag=$(git describe --abbrev=0 --tags --always)
           if [[ -z "$tag" ]]; then
             tag="v0.0.1"
           else
