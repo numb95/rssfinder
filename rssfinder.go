@@ -19,38 +19,35 @@ func FindRSSFeeds(url string) ([]string, error) {
 	}
 
 	var rssFeeds []string
-	var traverseHTML func(*html.Node)
-	traverseHTML = func(n *html.Node) {
-		// Check if the node is an <link> element
-		if n.Type == html.ElementNode && n.Data == "link" {
-			var feedURL string
-			isRSS := false
+	traverseHTML(doc, &rssFeeds)
+	return rssFeeds, nil
+}
 
-			// Check the attributes of the <link> element
-			for _, attr := range n.Attr {
-				// Check if the type attribute is RSS or Atom
-				if attr.Key == "type" && (attr.Val == "application/rss+xml" || attr.Val == "application/atom+xml") {
-					isRSS = true
-				} else if attr.Key == "href" {
-					// Store the URL of the RSS feed
-					feedURL = attr.Val
-				}
-			}
-
-			// If it's an RSS or Atom feed and URL is not empty, add it to the list
-			if isRSS && feedURL != "" {
-				rssFeeds = append(rssFeeds, feedURL)
-			}
-		}
-
-		// Recursively traverse the child nodes
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			traverseHTML(c)
+func traverseHTML(n *html.Node, rssFeeds *[]string) {
+	if n.Type == html.ElementNode && n.Data == "link" {
+		feedURL := getFeedURL(n)
+		if feedURL != "" {
+			*rssFeeds = append(*rssFeeds, feedURL)
 		}
 	}
 
-	// Start traversing the HTML document from the root node
-	traverseHTML(doc)
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		traverseHTML(c, rssFeeds)
+	}
+}
 
-	return rssFeeds, nil
+func getFeedURL(n *html.Node) string {
+	var feedURL string
+	isRSS := false
+	for _, attr := range n.Attr {
+		if attr.Key == "type" && (attr.Val == "application/rss+xml" || attr.Val == "application/atom+xml") {
+			isRSS = true
+		} else if attr.Key == "href" {
+			feedURL = attr.Val
+		}
+	}
+	if isRSS {
+		return feedURL
+	}
+	return ""
 }
