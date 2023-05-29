@@ -30,7 +30,6 @@ func traverseHTML(n *html.Node, rssFeeds *[]string) {
 			*rssFeeds = append(*rssFeeds, feedURL)
 		}
 	}
-
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		traverseHTML(c, rssFeeds)
 	}
