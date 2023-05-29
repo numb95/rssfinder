@@ -13,55 +13,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout branch
         uses: actions/checkout@v2
-
+        
       - name: Set up Git
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
+          
+      - name: Generate release tag
+        id: generate_release_tag
+        uses: amitsingh-007/next-release-tag@v4.0.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: 'v'
+          tag_template: 'yyyy.mm.dd.i'
 
-      - name: Generate tag
-        id: generate_tag
-        run: |
-          tag=$(git describe --abbrev=0 --tags --always)
-          if [[ -z "$tag" ]]; then
-            tag="v0.0.1"
-          else
-            tag=${tag#v}
-            IFS='.' read -r major minor patch <<< "$tag"
-            ((patch++))
-            tag="v${major}.${minor}.${patch}"
-          fi
-          echo "::set-output name=tag::$tag"
-
-      - name: Extract changes
-        id: extract_changes
-        run: |
-          changes=$(git log --format="%s" ${{ github.event.before }}..${{ github.sha }})
-          echo "::set-output name=changes::$changes"
-
-      - name: Extract pull request messages
-        id: extract_pr_messages
-        run: |
-          pr_messages=""
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            pr_messages=$(jq --raw-output '.commits[].message' ${{ github.event_path }})
-          fi
-          echo "::set-output name=pr_messages::$pr_messages"
-
-      - name: Create release
-        if: ${{ github.event_name == 'push' }}
-        id: create_release
+      - name: Create Release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.generate_tag.outputs.tag }}
-          release_name: Release ${{ steps.generate_tag.outputs.tag }}
-          body: |
-            ## Changes
-            ${{ steps.extract_changes.outputs.changes }}
-
-            ## Pull Request Messages
-            ${{ steps.extract_pr_messages.outputs.pr_messages }}
+          tag_name: ${{ steps.generate_release_tag.outputs.next_release_tag }}
+          release_name: Release ${{ steps.generate_release_tag.outputs.next_release_tag }}
