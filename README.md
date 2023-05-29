@@ -27,6 +27,27 @@ func FindRSSFeeds(url string) ([]string, error)
 
 FindRSSFeeds finds the RSS feeds in a webpage.
 
+## Example Code
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/numb95/rssfinder"
+)
+
+func main() {
+	url := "https://goodarzi.net"
+	rss, err := rssfinder.FindRSSFeeds(url)
+	if err != nil {
+		panic(err)
+	}
+	for _, feed := range rss {
+		fmt.Println(feed)
+	}
+}
+```
 ## License
 
 This project is licensed under the [MIT license](https://opensource.org/license/mit/)
